@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SignalREditor.Hubs;
 
 namespace SignalREditor
 {
@@ -30,9 +31,19 @@ namespace SignalREditor
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+            
+            services.AddCors(options => options.AddPolicy("CorsPolicy", 
+            builder => 
+            {
+                builder.AllowAnyMethod().AllowAnyHeader()
+                       .WithOrigins("http://localhost:8080")
+                       .AllowCredentials();
+            }));
 
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,9 +60,18 @@ namespace SignalREditor
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            app.UseCors("CorsPolicy");
+
+            //app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
+            
+            app.UseSignalR(routes => 
+            {
+                routes.MapHub<EditorHub>("/editorHub");
+            });
+
+            
 
             app.UseMvc();
         }

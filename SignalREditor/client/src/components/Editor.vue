@@ -1,42 +1,68 @@
 <template>
   <div class="editor">
-    <quill v-model="content" :config="config" @text-change="textChanged">></quill>
+    <quill-editor
+      ref="myTextEditor"
+      v-model="content"
+      :options="editorOption"
+      @blur="onEditorBlur($event)"
+      @focus="onEditorFocus($event)"
+      @ready="onEditorReady($event)"
+      @change="onEditorChange($event)"
+    ></quill-editor>
   </div>
 </template>
 
 <script>
-
 export default {
-  name: 'Editor',
-  data: function() {
+  name: "Editor",
+  data() {
     return {
-        config: {
-            height: '100vh',
-            readOnly: false,
-            placeholder: 'Compose an epic...',
-        },
+      editorOption: {
+        modules: {
+          toolbar: [["bold", "italic", "underline", "strike"]]
+        }
+      }
+    };
+  },
+  methods: {
+    onEditorBlur(editor) {
+      // this.$store.dispatch("editorUnfocused");
+    },
+    onEditorFocus(editor) {
+      // this.$store.dispatch("editorFocused");
+    },
+    onEditorReady(editor) {},
+    onEditorChange(e, n) {
+      const { quill, html, text } = e;
+      const { editor } = quill;
+      this.$store.dispatch("editorChanged", editor.delta);
     }
   },
   computed: {
+    editor() {
+      return this.$refs.myTextEditor.quill;
+    },
     content: {
-      get: function () {
-        return this.$store.state.content
+      get: function() {
+        console.log("get content");
+        /*if (this.$refs.myTextEditor && this.$refs.myTextEditor.quill && this.$store.state.content.ops) {
+           this.$refs.myTextEditor.quill.updateContents(this.$store.state.content);
+        }*/
+        return this.$store.state.content;
       },
-      set: function (content) {
+      set: function(v) {
+        console.log("set content");
+        console.log(v);
       }
     }
-  }, 
-  methods: {
-    textChanged: function(quill, delta, oldDelta, source) {
-      if (source == 'api') {
-        console.log("An API call triggered this change.");
-      } else if (source == 'user') {
-        console.log("A user action triggered this change.");
-      }
-      this.$store.dispatch('changeText', delta);
-    }
+  },
+  mounted: function() {
+    this.$store.dispatch("connect");
+  },
+  destroyed: function() {
+    this.$store.dispatch("disconnect");
   }
-}
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
