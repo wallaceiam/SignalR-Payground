@@ -12,11 +12,9 @@ export default new Vuex.Store({
   },
   mutations: {
     textChanged(state, delta) {
-      console.log(`textChanged: ${delta}`);
       state.content = delta;
     },
     notifyTextChanged(state, delta) {
-      console.log(`notifyTextChanged: ${delta}`);
       state.connection.invoke('textChanged', delta);
     },
     connected(state, connection) {
